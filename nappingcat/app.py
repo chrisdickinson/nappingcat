@@ -2,19 +2,24 @@ import os
 import sys
 from nappingcat.exceptions import NappingCatUnhandled, NappingCatException
 
+COLOR_RED = 31
+COLOR_GREEN = 32
+
 class App(object):
-    def __init__(self, *args, **kwargs):
-        super(App, self).__init__(*args, **kwargs)
+    def output(self, color, what, to_stream=sys.stderr):
+        output = "\033[0;%dm%s\033[0m" % (color, what)
+        print >>to_stream, output 
 
     @classmethod
     def run(cls, *args, **kwargs):
         user = sys.argv[1]
         original_command = os.environ.get('SSH_ORIGINAL_COMMAND') 
         try:
-            results = cls().main(user=user, original_command=original_command)
-            print >>sys.stderr, "\033[0;32m%s\033[0m" % results
+            instance = cls()
+            results = instance.main(user=user, original_command=original_command)
+            instance.output(COLOR_GREEN, results)
         except NappingCatException, e:
-            print >>sys.stderr, "\033[1;31m%s\033[0m" % e 
+            instance.output(COLOR_RED, str(e))
 
     def main(self, *args, **kwargs):
         raise NappingCatUnhandled("""

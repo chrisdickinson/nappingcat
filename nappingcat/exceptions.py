@@ -7,5 +7,8 @@ class NappingCatUnhandled(NappingCatException):
 class NappingCatBadConfig(NappingCatException):
     pass
 
+class NappingCatBadPatterns(NappingCatBadConfig):
+    pass
+
 class NappingCatRejected(NappingCatException):
     pass

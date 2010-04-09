@@ -1,5 +1,5 @@
 from nappingcat.util import import_module 
-from nappingcat.exceptions import NappingCatUnhandled
+from nappingcat.exceptions import NappingCatUnhandled, NappingCatBadPatterns
 import re
 
 class CommandPatterns(object):
@@ -23,7 +23,8 @@ class CommandPatterns(object):
                     results = getattr(self.module, target), match
                 elif hasattr(target, '__call__'):
                     results = target, match
-
+                else:
+                    raise NappingCatBadPatterns("Target of %s is not a patterns instance, string, or callable." % command)
                 if results is not None:
                     return results
         raise NappingCatUnhandled("This cat doesn't understand %s." % command)

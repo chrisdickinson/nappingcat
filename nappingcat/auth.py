@@ -21,10 +21,6 @@ def get_auth_backend_from_settings(settings):
     target = getattr(module,target)
     return target(settings)
 
-def get_permission(request, permission):
-    backend = get_auth_backend_from_settings(request.settings)
-    return backend.get_permission(request.user, permission)
-
 def has_permission(request, permission):
     backend = get_auth_backend_from_settings(request.settings)
     return backend.has_permission(request.user, permission)
