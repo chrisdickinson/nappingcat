@@ -64,7 +64,7 @@ paths =
         self.mox.StubOutWithMock(config, 'build_settings')
         settings = """
 [%s]
-router=dne.dne.dne
+routers=dne.dne.dne
         """.strip() % config.SECTION_NAME
         config.build_settings().AndReturn(create_settings(settings))
         self.mox.ReplayAll()
@@ -76,7 +76,7 @@ router=dne.dne.dne
         self.mox.StubOutWithMock(config, 'build_settings')
         settings = """
 [%s]
-router=tests.serve
+routers=tests.serve
         """.strip() % config.SECTION_NAME
         config.build_settings().AndReturn(create_settings(settings))
         config.build_settings().AndReturn(create_settings(settings))

@@ -1,6 +1,6 @@
 from nappingcat import config
 from nappingcat.app import App
-from nappingcat.patterns import patterns, include
+from nappingcat.patterns import patterns, include, CommandPatterns
 from nappingcat.util import import_module
 from nappingcat.request import Request
 from nappingcat.exceptions import NappingCatBadConfig
@@ -18,9 +18,9 @@ class ServeApp(App):
         if kitty_config.get('paths', None) is not None:
             sys.path[0:0] = [i for i in kitty_config['paths'].split('\n') if i]        
 
-        router_module_name = kitty_config.get('router')
-        cmdpatterns = include(router_module_name)
-
+        router_module_names = kitty_config.get('routers')
+        routers = [(r'^', include(i)) for i in router_module_names.split('\n') if i]
+        cmdpatterns = CommandPatterns('', routers)
         target, match = cmdpatterns.match(original_command)
         request = Request(
             user=user, 
