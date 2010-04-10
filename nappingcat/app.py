@@ -1,14 +1,13 @@
 import os
 import sys
 from nappingcat.exceptions import NappingCatUnhandled, NappingCatException
-
-COLOR_RED = 31
-COLOR_GREEN = 32
+from nappingcat import logs
 
 class App(object):
-    def output(self, color, what, to_stream=sys.stderr):
-        output = "\033[0;%dm%s\033[0m" % (color, what)
-        print >>to_stream, output 
+    logger = logs.ColorLogger()
+    def __init__(self, logger=None):
+        if logger:
+            self.logger = logger
 
     @classmethod
     def run(cls, *args, **kwargs):
@@ -17,9 +16,9 @@ class App(object):
         try:
             instance = cls()
             results = instance.main(user=user, original_command=original_command)
-            instance.output(COLOR_GREEN, results)
+            instance.logger.good(results)
         except NappingCatException, e:
-            instance.output(COLOR_RED, str(e))
+            instance.logger.bad(str(e))
 
     def main(self, *args, **kwargs):
         raise NappingCatUnhandled("""

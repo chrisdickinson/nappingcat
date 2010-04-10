@@ -4,40 +4,56 @@ from nappingcat.exceptions import NappingCatException, NappingCatUnhandled
 import StringIO
 import random
 import sys
+import fudge
 
 class TestOfApp(TestCase):
+    # TODO: refactor these three methods into a common super-class
+    def setUp(self):
+        fudge.clear_expectations()
+        self.patched_apis = []
+
+    def tearDown(self):
+        for patched in self.patched_apis:
+            patched.restore()
+
+    def patch(self, *args, **kwargs):
+        self.patched_apis.append(fudge.patch_object(*args, **kwargs))
+
     def test_main_raises_unhandled(self):
         self.assertRaises(NappingCatUnhandled, app.App().main)
 
-    def test_run_outputs_green_on_success(self):
-        stream = StringIO.StringIO()
+    def test_run_calls_good_on_sucess(self):
         random_test = 'rand-%d' % random.randint(1,100)
+
+        fake_good = fudge.Fake('app.logs.ColorLogger.good', expect_call=True).with_args(random_test)
+        self.patch(app.logs.ColorLogger, 'good', fake_good)
+        fudge.clear_calls()
+
         class SubApp(app.App):
-            def output(self, color, what, to_stream=None):
-                super(SubApp, self).output(color, what, stream) 
             def main(*args, **kwargs):
                 return random_test
+
+        # TODO: document what these are? [command, user]?
         sys.argv = [random.randint(1,100), random.randint(1,100)]
         SubApp.run()
-        stream.seek(0)
-        results = stream.read()
-        self.assertTrue(random_test in results)
-        self.assertTrue(str(app.COLOR_GREEN) in results)
 
-    def test_run_outputs_red_on_failure(self):
-        stream = StringIO.StringIO()
+        fudge.verify()
+
+    def test_run_calls_bad_on_failure(self):
         random_test = 'rand-%d' % random.randint(1,100)
+
+        fake_bad = fudge.Fake('app.logs.ColorLogger.bad', expect_call=True).with_args(random_test)
+        self.patch(app.logs.ColorLogger, 'bad', fake_bad)
+
         class SubApp(app.App):
-            def output(self, color, what, to_stream=None):
-                super(SubApp, self).output(color, what, stream) 
             def main(*args, **kwargs):
                 raise NappingCatException(random_test)
+
+        # TODO: document what these are? [command, user]?
         sys.argv = [random.randint(1,100), random.randint(1,100)]
         SubApp.run()
-        stream.seek(0)
-        results = stream.read()
-        self.assertTrue(random_test in results)
-        self.assertTrue(str(app.COLOR_RED) in results)
+
+        fudge.verify()
 
     def test_run_delegates_to_app_instance_main(self):
         random_test = 'rand-%d' % random.randint(1,100)
