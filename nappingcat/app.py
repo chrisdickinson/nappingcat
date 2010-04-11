@@ -1,7 +1,7 @@
 import os
 import sys
 from nappingcat.exceptions import NappingCatUnhandled, NappingCatException
-from nappingcat import logs
+from nappingcat import exceptions, logs
 
 class App(object):
     logger = logs.ColorLogger()
@@ -11,6 +11,9 @@ class App(object):
 
     @classmethod
     def run(cls, instance=None, *args, **kwargs):
+        if not len(sys.argv) >= 2:
+            raise exceptions.NoUserException()
+        # TODO: these global dependencies should be removed
         user = sys.argv[1]
         original_command = os.environ.get('SSH_ORIGINAL_COMMAND') 
         try:
