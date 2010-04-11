@@ -47,31 +47,30 @@ class TestOfApp(TestCase):
     def test_run_calls_good_on_sucess(self):
         random_test = 'rand-%d' % random.randint(1,100)
 
-        fake_good = fudge.Fake('app.logs.ColorLogger.good', expect_call=True).with_args(random_test)
-        self.patch(app.logs.ColorLogger, 'good', fake_good)
+        fake_instance = fudge.Fake()
+        fake_instance.provides('main').returns(random_test)
+        fake_instance.logger = fudge.Fake()
+        fake_instance.logger.expects('good').with_args(random_test)
         fudge.clear_calls()
-
-        class SubApp(app.App):
-            def main(*args, **kwargs):
-                return random_test
 
         # TODO: document what these are? [command, user]?
         sys.argv = [random.randint(1,100), random.randint(1,100)]
-        SubApp.run()
+
+        app.App.run(instance=fake_instance)
 
     def test_run_calls_bad_on_failure(self):
         random_test = 'rand-%d' % random.randint(1,100)
 
-        fake_bad = fudge.Fake('app.logs.ColorLogger.bad', expect_call=True).with_args(random_test)
-        self.patch(app.logs.ColorLogger, 'bad', fake_bad)
-
-        class SubApp(app.App):
-            def main(*args, **kwargs):
-                raise NappingCatException(random_test)
+        fake_instance = fudge.Fake()
+        fake_instance.provides('main').raises(NappingCatException(random_test))
+        fake_instance.logger = fudge.Fake()
+        fake_instance.logger.expects('bad').with_args(random_test)
+        fudge.clear_calls()
 
         # TODO: document what these are? [command, user]?
         sys.argv = [random.randint(1,100), random.randint(1,100)]
-        SubApp.run()
+
+        app.App.run(instance=fake_instance)
 
     def test_run_delegates_to_app_instance_main(self):
         random_test = 'rand-%d' % random.randint(1,100)
