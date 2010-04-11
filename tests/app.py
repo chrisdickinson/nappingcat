@@ -54,23 +54,41 @@ class TestOfApp(TestCase):
 
     def test_run_delegates_to_app_instance_main(self):
         random_test = 'rand-%d' % random.randint(1,100)
-        triggers = {}
-        class SubApp(app.App):
-            def main(*args, **kwargs):
-                triggers['passed_to_main'] = True
+
+        # TODO: document what these are? [command, user]?
+        # TODO: move duplication into helper method with intent revealing name
         sys.argv = [random.randint(1,100), random.randint(1,100)]
-        SubApp.run()
-        self.assertTrue(triggers['passed_to_main'])
+
+        fake_main = fudge.Fake('app.App.main', expect_call=True)
+        self.patch(app.App, 'main', fake_main)
+        fudge.clear_calls()
+
+        app.App.run()
 
     def test_run_passed_original_command_and_user_from_argv(self):
         import os
         random_ssh_cmd = "rand-%d" % random.randint(1,100)
         random_user = 'user-%d' % random.randint(1,100)
+
+        # TODO: this should be something that can be passed into the app
+        #       rather than requiring a patch of the os.environ global
+        #
+        # TODO: restore value after test has run
         os.environ['SSH_ORIGINAL_COMMAND'] = random_ssh_cmd
         sys.argv = ['anything', random_user]
 
-        class SubApp(app.App):
-            def main(*args, **kwargs):
-                self.assertEqual(kwargs['user'], random_user)
-                self.assertEqual(kwargs['original_command'], random_ssh_cmd)
-        SubApp.run()
+        fake_main = fudge.Fake(
+            'app.App.main',
+            expect_call=True
+        ).with_args(
+            user=random_user,
+            original_command=random_ssh_cmd
+        )
+        self.patch(app.App, 'main', fake_main)
+        fudge.clear_calls()
+
+        original_logger = app.App.logger
+        app.App.logger = fudge.Fake().provides('good')
+        app.App.run()
+
+        app.App.logger = original_logger
