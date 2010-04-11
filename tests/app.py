@@ -13,6 +13,7 @@ class TestOfApp(TestCase):
         self.patched_apis = []
 
     def tearDown(self):
+        fudge.verify()
         for patched in self.patched_apis:
             patched.restore()
 
@@ -37,8 +38,6 @@ class TestOfApp(TestCase):
         sys.argv = [random.randint(1,100), random.randint(1,100)]
         SubApp.run()
 
-        fudge.verify()
-
     def test_run_calls_bad_on_failure(self):
         random_test = 'rand-%d' % random.randint(1,100)
 
@@ -52,8 +51,6 @@ class TestOfApp(TestCase):
         # TODO: document what these are? [command, user]?
         sys.argv = [random.randint(1,100), random.randint(1,100)]
         SubApp.run()
-
-        fudge.verify()
 
     def test_run_delegates_to_app_instance_main(self):
         random_test = 'rand-%d' % random.randint(1,100)
