@@ -2,6 +2,7 @@ from unittest import TestCase
 from nappingcat import app
 from nappingcat.exceptions import NappingCatException, NappingCatUnhandled
 import StringIO
+import os
 import random
 import sys
 import fudge
@@ -11,11 +12,15 @@ class TestOfApp(TestCase):
     def setUp(self):
         fudge.clear_expectations()
         self.patched_apis = []
+        self.original_os_environ = os.environ
+        self.original_sys_argv = sys.argv
 
     def tearDown(self):
         fudge.verify()
         for patched in self.patched_apis:
             patched.restore()
+        os.environ = self.original_os_environ
+        sys.argv = self.original_sys_argv
 
     def patch(self, *args, **kwargs):
         self.patched_apis.append(fudge.patch_object(*args, **kwargs))
@@ -71,14 +76,11 @@ class TestOfApp(TestCase):
         app.App.run()
 
     def test_run_passed_original_command_and_user_from_argv(self):
-        import os
         random_ssh_cmd = "rand-%d" % random.randint(1,100)
         random_user = 'user-%d' % random.randint(1,100)
 
         # TODO: this should be something that can be passed into the app
         #       rather than requiring a patch of the os.environ global
-        #
-        # TODO: restore value after test has run
         os.environ['SSH_ORIGINAL_COMMAND'] = random_ssh_cmd
         sys.argv = ['anything', random_user]
 
