@@ -1,7 +1,7 @@
 class NappingCatException(Exception):
     pass
 
-class NoUserException(Exception):
+class NoUserException(NappingCatException):
     pass
 
 class NappingCatUnhandled(NappingCatException):
