@@ -15,7 +15,7 @@ A django-inspired framework for routing single-user SSH calls.
 
 Useful for implementing software like gitosis.
 """.strip(),
-    license = "GPLv3 / CDDL",
+    license = "BSD / GPLv3 / CDDL",
     keywords = "framework restrict commands ssh",
     url = "http://github.com/chrisdickinson/nappingcat/",
 

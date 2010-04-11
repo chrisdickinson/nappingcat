@@ -72,3 +72,9 @@ TODO
 create a decent auth app/API for adding new users, keys, and initializing keys.
 create a decent auth backend to actually provide permissions to apps.
 
+LICENSING
+------------------
+In an effort to appease all and sundry, I'm offering up this software in three license flavors --
+CDDL, GPLv3, or BSD. Choose your poison.
+
+
