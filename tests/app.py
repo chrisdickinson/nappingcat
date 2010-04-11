@@ -61,6 +61,11 @@ class TestOfApp(TestCase):
 
         fake_main = fudge.Fake('app.App.main', expect_call=True)
         self.patch(app.App, 'main', fake_main)
+
+        # make sure this stays quiet
+        fake_good = fudge.Fake('app.logs.ColorLogger.good', expect_call=True)
+        self.patch(app.logs.ColorLogger, 'good', fake_good)
+
         fudge.clear_calls()
 
         app.App.run()
