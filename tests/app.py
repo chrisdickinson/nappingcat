@@ -25,6 +25,22 @@ class TestOfApp(TestCase):
     def patch(self, *args, **kwargs):
         self.patched_apis.append(fudge.patch_object(*args, **kwargs))
 
+    def test_calls_main_on_provided_instance(self):
+        random_user = 'user-%d' % random.randint(100, 200)
+        sys.argv = ['_ignored', random_user]
+        random_ssh_command = 'execute %d' % random.randint(100, 200)
+        os.environ['SSH_ORIGINAL_COMMAND'] = random_ssh_command
+
+        fake_instance = fudge.Fake()
+        fake_instance.expects('main').with_args(
+            user=random_user,
+            original_command=random_ssh_command
+        )
+        fake_instance.logger = fudge.Fake().provides('good')
+        fudge.clear_calls()
+
+        app.App.run(instance=fake_instance)
+
     def test_main_raises_unhandled(self):
         self.assertRaises(NappingCatUnhandled, app.App().main)
 

@@ -10,11 +10,12 @@ class App(object):
             self.logger = logger
 
     @classmethod
-    def run(cls, *args, **kwargs):
+    def run(cls, instance=None, *args, **kwargs):
         user = sys.argv[1]
         original_command = os.environ.get('SSH_ORIGINAL_COMMAND') 
         try:
-            instance = cls()
+            if not instance:
+                instance = cls()
             results = instance.main(user=user, original_command=original_command)
             instance.logger.good(results)
         except NappingCatException, e:
