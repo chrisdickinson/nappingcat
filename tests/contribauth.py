@@ -6,7 +6,7 @@ from nappingcat import auth
 import ConfigParser
 import StringIO
 import random
-
+import os
 
 class SimpleAuth(auth.AuthBackend):
     user_dict = {}
@@ -36,6 +36,7 @@ class TestContribAuthHandlers(TestCase):
         settings_str = """                                                                                                               
 [kittyconfig]                                                                                                                            
 auth=tests.contribauth.SimpleAuth
+authorized_keys=.test_authorized_keys
         """.strip()                                                                                                                      
         config = ConfigParser.ConfigParser()                                                                                             
         config.readfp(StringIO.StringIO(settings_str)) 
@@ -56,6 +57,8 @@ auth=tests.contribauth.SimpleAuth
 
     def tearDown(self):
         SimpleAuth.user_dict = {}
+        if os.path.isfile('.test_authorized_keys'):
+            os.unlink('.test_authorized_keys')
 
     def test_add_user_adds_a_user(self):
         auth.add_user(self.request, self.user)
@@ -76,8 +79,10 @@ auth=tests.contribauth.SimpleAuth
         handlers.add_key_to_user(self.request, random_user)
 
         self.assertTrue(self.random_key in SimpleAuth.user_dict[random_user]['keys'])
-        self.request.stdout.seek(0)
-        output = self.request.stdout.read()
+
+        with open('.test_authorized_keys', 'r') as authorized_keys:
+            output = authorized_keys.read()
+
         self.assertTrue(self.random_key in output)
         self.assertTrue(random_user in output)
         self.assertTrue('nappingcat-serve' in output)

@@ -26,13 +26,13 @@ class AuthBackend(object):
     def get_users(self):
         pass
 
-    def flush(self, request):
+    def flush(self, request, target):
         users = self.get_users()
         io = StringIO.StringIO()
         format = 'command="nappingcat-serve %s",no-port-forwarding,no-X11-forwarding,no-pty,no-agent-forwarding %s'
         [[io.write(format % (user, key)) for key in self.get_keys(user)] for user in users]
         io.seek(0)
-        request.stdout.write(io.read())
+        target.write(io.read())
 
 def get_auth_backend_from_settings(settings):
     settings_dict = dict(settings.items(config.SECTION_NAME))
@@ -57,9 +57,9 @@ def add_user(request, username):
     backend = get_auth_backend_from_settings(request.settings)
     return backend.add_user(username)
 
-def add_key_to_user(request, username, key, flush=True):
+def add_key_to_user(request, username, key, flush=True, target=None):
     backend = get_auth_backend_from_settings(request.settings)
     result = backend.add_key_to_user(username, key)
     if flush:
-        backend.flush(request)
+        backend.flush(request, target)
     return result

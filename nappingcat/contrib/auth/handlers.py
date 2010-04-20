@@ -1,6 +1,7 @@
 from nappingcat.exceptions import NappingCatRejected
 from nappingcat import auth
 import sys
+import os
 
 PERMISSION_SEP = '::'
 
@@ -13,7 +14,9 @@ def add_user(request, username):
 def add_key_to_user(request, username):
     if auth.has_permission(request, request.user, ('auth', 'modifyuser')):
         key = request.stdin.read()
-        auth.add_key_to_user(request, username, key) 
+        settings = dict(request.settings.items('kittyconfig'))
+        with open(os.path.expanduser(settings.get('authorized_keys', '~/.ssh/authorized_keys')), 'w') as target:
+            auth.add_key_to_user(request, username, key, target=target) 
         return "You added the key '%s...' to the user '%s'" % (key[0:30], username)
     raise NappingCatRejected("You don't have permission to modify users.")
 
