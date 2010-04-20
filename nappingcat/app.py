@@ -1,25 +1,41 @@
+from nappingcat.exceptions import NappingCatUnhandled, NappingCatException
+from nappingcat import exceptions, logs, config
+from nappingcat.util import import_module
 import os
 import sys
-from nappingcat.exceptions import NappingCatUnhandled, NappingCatException
-from nappingcat import exceptions, logs
 
 class App(object):
-    logger = logs.ColorLogger()
-    def __init__(self, logger=None):
-        if logger:
-            self.logger = logger
+    def __init__(self, environ=None, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+        if environ is None:
+            environ = {}
+            environ.update(os.environ)
+            environ['argv'] = sys.argv[1:]
+        self.environ = environ
+        self.stdin = stdin
+        self.stdout = stdout
+        self.stderr = stderr
+
+    def setup_environ(self):
+        settings = config.build_settings()        
+        if not settings.has_section(config.SECTION_NAME):
+            raise exceptions.NappingCatBadConfig("""
+                Your nappingcat.conf file does not include a %s section!
+            """.strip() % config.SECTION_NAME)
+
+        kitty_config = dict(settings.items(config.SECTION_NAME))
+        if kitty_config.get('paths', None) is not None:
+            sys.path[0:0] = [i for i in kitty_config['paths'].split('\n') if i]
+        logger_class = import_module(kitty_config['logger']) if 'logger' in kitty_config else logs.ColorLogger
+        self.global_settings = settings
+        self.nappingcat_settings = kitty_config
+        self.logger = logger_class(self.stderr)
 
     @classmethod
-    def run(cls, instance=None, *args, **kwargs):
-        if not len(sys.argv) >= 2:
-            raise exceptions.NoUserException()
-        # TODO: these global dependencies should be removed
-        user = sys.argv[1]
-        original_command = os.environ.get('SSH_ORIGINAL_COMMAND') 
+    def run(cls, *args, **kwargs):
+        instance = cls()
+        instance.setup_environ()
         try:
-            if not instance:
-                instance = cls()
-            results = instance.main(user=user, original_command=original_command)
+            results = instance.main()
             instance.logger.good(results)
         except NappingCatException, e:
             instance.logger.bad(str(e))

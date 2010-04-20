@@ -40,8 +40,7 @@ this_does_not_matter=nope
         """.strip()        
         config.build_settings().AndReturn(create_settings(settings))
         self.mox.ReplayAll()
-        self.assertRaises(NappingCatBadConfig, serve.ServeApp().main, random.randint(1,100), random.randint(1,100))
-
+        self.assertRaises(NappingCatBadConfig, serve.ServeApp.run)
     def test_inserts_into_sys_path(self):
         self.mox.StubOutWithMock(config, 'build_settings')
         random_paths = ['rand-%d' for i in range(0,3)]
@@ -55,8 +54,11 @@ paths =
         config.build_settings().AndReturn(create_settings(settings))
         self.mox.ReplayAll()
 
+
         # we don't really care about this assertion.
-        self.assertRaises(Exception, serve.ServeApp().main, random.randint(1, 100), random.randint(1, 100))
+        serve.ServeApp(
+            environ={'argv':[random.randint(1,100)]},
+        ).setup_environ()
 
         self.assertTrue(all([path in sys.path for path in random_paths]))
 
@@ -70,7 +72,7 @@ routers=dne.dne.dne
         self.mox.ReplayAll()
 
         # this time we care that things are broken.
-        self.assertRaises(ImportError, serve.ServeApp().main, random.randint(1, 100), random.randint(1, 100))
+        self.assertRaises(ImportError, serve.ServeApp.run)
 
     def test_delegates_properly(self):
         self.mox.StubOutWithMock(config, 'build_settings')
@@ -83,18 +85,43 @@ routers=tests.serve
         config.build_settings().AndReturn(create_settings(settings))
         self.mox.ReplayAll()
 
-        args, kwargs = serve.ServeApp().main(random.randint(1,100), SIMPLE_COMMAND)
+
+        random_user = 'user%d' % random.randint(1,100)
+        app = serve.ServeApp(
+            environ={'SSH_ORIGINAL_COMMAND':SIMPLE_COMMAND, 'user':random_user},
+            stdin=random.randint(1,100),
+            stdout=random.randint(1,100),
+            stderr=random.randint(1,100)
+        )
+        app.setup_environ()
+        args, kwargs = app.main()
+        
         self.assertTrue(isinstance(args[0], request.Request))
         self.assertEqual(args[0].command, SIMPLE_COMMAND)
+
+        app = serve.ServeApp(
+            environ={'SSH_ORIGINAL_COMMAND':'hey there'},
+            stdin=random.randint(1,100),
+            stdout=random.randint(1,100),
+            stderr=random.randint(1,100)
+        )
+        app.setup_environ()
+        args, kwargs = app.main()
         
-        args, kwargs = serve.ServeApp().main(random.randint(1,100), 'hey there')
         self.assertTrue(isinstance(args[0], request.Request))
         self.assertEqual(args[0].command, 'hey there')
         self.assertTrue('something' in kwargs)
         self.assertEqual(kwargs['something'], 'there')
         self.assertEqual(kwargs['optional'], None)
         
-        args, kwargs = serve.ServeApp().main(random.randint(1,100), 'hey there girl')
+        app = serve.ServeApp(
+            environ={'SSH_ORIGINAL_COMMAND':'hey there girl'},
+            stdin=random.randint(1,100),
+            stdout=random.randint(1,100),
+            stderr=random.randint(1,100)
+        )
+        app.setup_environ()
+        args, kwargs = app.main()
         self.assertTrue(isinstance(args[0], request.Request))
         self.assertEqual(args[0].command, 'hey there girl')
         self.assertTrue('something' in kwargs)

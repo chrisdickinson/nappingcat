@@ -3,30 +3,31 @@ from nappingcat.app import App
 from nappingcat.patterns import patterns, include, CommandPatterns
 from nappingcat.util import import_module
 from nappingcat.request import Request
-from nappingcat.exceptions import NappingCatBadConfig
+from nappingcat.exceptions import NappingCatBadArguments
 import sys
 
 class ServeApp(App):
-    def main(self, user, original_command):
-        settings = config.build_settings()        
-        if not settings.has_section(config.SECTION_NAME):
-            raise NappingCatBadConfig("""
-                Your nappingcat.conf file does not include a %s section!
-            """.strip() % config.SECTION_NAME)
-
-        kitty_config = dict(settings.items(config.SECTION_NAME))
-        if kitty_config.get('paths', None) is not None:
-            sys.path[0:0] = [i for i in kitty_config['paths'].split('\n') if i]        
-
-        router_module_names = kitty_config.get('routers')
-        routers = [(r'^', include(i)) for i in router_module_names.split('\n') if i]
-        cmdpatterns = CommandPatterns('', routers)
-        target, match = cmdpatterns.match(original_command)
-        request = Request(
-            user=user, 
-            command=original_command, 
-            settings=settings
+    def create_request(self):
+        try:
+            user = self.environ.get('argv', [None])[0]
+        except IndexError:
+            raise NappingCatBadArguments("nappingcat-serve needs a user to run properly.") 
+        return Request(
+            user=self.environ.get('argv', [None])[0],
+            command=self.environ.get('SSH_ORIGINAL_COMMAND', None),
+            settings=self.global_settings,
+            streams=(self.stdin, self.stdout, self.stderr)
         )
-        return target(request, **match.groupdict())
 
+    def setup_environ(self):
+        super(ServeApp, self).setup_environ()
+        router_module_names = self.nappingcat_settings.get('routers')
+        router_module_names = "" if not router_module_names else router_module_names
+        self.routers = [(r'^', include(i)) for i in router_module_names.split('\n') if i]
+
+    def main(self):
+        request = self.create_request()
+        cmdpatterns = CommandPatterns('', self.routers)
+        target, match = cmdpatterns.match(request.command)
+        return target(request, **match.groupdict())
 
