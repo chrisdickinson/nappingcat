@@ -29,8 +29,8 @@ class AuthBackend(object):
     def flush(self, request, target):
         users = self.get_users()
         io = StringIO.StringIO()
-        format = 'command="nappingcat-serve %s",no-port-forwarding,no-X11-forwarding,no-pty,no-agent-forwarding %s'
-        [[io.write(format % (user, key)) for key in self.get_keys(user)] for user in users]
+        format = 'command="nappingcat-serve %s",no-port-forwarding,no-X11-forwarding,no-pty,no-agent-forwarding %s\n'
+        [[io.write(format % (user, key)) for key in self.get_keys(user) if key.strip()] for user in users]
         io.seek(0)
         target.write(io.read())
 
