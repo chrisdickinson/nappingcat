@@ -15,7 +15,7 @@ class ColorLogger(object):
         self.output(COLOR_BAD, what)
 
     def output(self, color, what):
-        output = "\033[0;%dm%s\033[0m" % (color, what)
+        output = "\033[0;%dm%s\033[0m\n" % (color, what)
         self.stream.write(output)
         self.stream.flush()
         
