@@ -1,6 +1,6 @@
 from nappingcat.exceptions import NappingCatUnhandled, NappingCatException
 from nappingcat import exceptions, logs, config
-from nappingcat.util import import_module
+from nappingcat.util import import_module, import_class_from_module
 import os
 import sys
 
@@ -25,7 +25,9 @@ class App(object):
         kitty_config = dict(settings.items(config.SECTION_NAME))
         if kitty_config.get('paths', None) is not None:
             sys.path[0:0] = [i for i in kitty_config['paths'].split('\n') if i]
-        logger_class = import_module(kitty_config['logger']) if 'logger' in kitty_config else logs.ColorLogger
+
+
+        logger_class = import_class_from_module(kitty_config['logger']) if 'logger' in kitty_config else logs.ColorLogger
         self.global_settings = settings
         self.nappingcat_settings = kitty_config
         self.logger = logger_class(self.stderr)

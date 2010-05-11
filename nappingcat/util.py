@@ -36,3 +36,8 @@ def import_module(name, package=None):
     __import__(name)
     return sys.modules[name]
 
+
+def import_class_from_module(name):
+    module_path, target = name.rsplit('.', 1)
+    module = import_module(module_path)
+    return getattr(module, target)
