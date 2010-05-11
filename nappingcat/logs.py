@@ -18,4 +18,8 @@ class ColorLogger(object):
         output = "\033[0;%dm%s\033[0m\n" % (color, what)
         self.stream.write(output)
         self.stream.flush()
-        
+
+class PlainLogger(ColorLogger):
+    def output(self, color, what):
+        self.stream.write(what)
+        self.stream.flush()
