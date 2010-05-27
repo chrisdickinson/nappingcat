@@ -5,3 +5,4 @@ from tests.patterns import *
 from tests.request import *
 from tests.contribauth import *
 from tests.serve import *
+from tests.gittests import *

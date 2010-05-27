@@ -61,8 +61,8 @@ authorized_keys=.test_authorized_keys
             os.unlink('.test_authorized_keys')
 
     def test_add_user_adds_a_user(self):
-        auth.add_user(self.request, self.user)
-        auth.add_permission(self.request, self.user, ('auth', 'adduser'))
+        auth.add_user(self.request.settings, self.user)
+        auth.add_permission(self.request.settings, self.user, ('auth', 'adduser'))
         random_user = 'new-user-%d' % random.randint(1,100)
         handlers.add_user(self.request, random_user)
         self.assertTrue(random_user in SimpleAuth.user_dict)
@@ -71,62 +71,46 @@ authorized_keys=.test_authorized_keys
         random_user = 'new-user-%d' % random.randint(1,100)
         self.assertRaises(NappingCatRejected, handlers.add_user, self.request, random_user)
 
-    def test_add_key_to_user_affects_authorized_keys(self):
-        auth.add_user(self.request, self.user)
-        auth.add_permission(self.request, self.user, ('auth', 'modifyuser'))
-        random_user = 'new-user-%d' % random.randint(1,100)
-        auth.add_user(self.request, random_user)
-        handlers.add_key_to_user(self.request, random_user)
-
-        self.assertTrue(self.random_key in SimpleAuth.user_dict[random_user]['keys'])
-
-        with open('.test_authorized_keys', 'r') as authorized_keys:
-            output = authorized_keys.read()
-
-        self.assertTrue(self.random_key in output)
-        self.assertTrue(random_user in output)
-        self.assertTrue('nappingcat-serve' in output)
-
     def test_unauth_add_key_to_user(self):
-        auth.add_user(self.request, self.user)
+        auth.add_user(self.request.settings, self.user)
         random_user = 'new-user-%d' % random.randint(1,100)
-        auth.add_user(self.request, random_user)
+        auth.add_user(self.request.settings, random_user)
         self.assertRaises(NappingCatRejected, handlers.add_key_to_user, self.request, random_user)
 
     def test_add_permission_actually_adds_permission(self):
-        auth.add_user(self.request, self.user)
-        auth.add_permission(self.request, self.user, ('auth', 'modifyuser'))
+        auth.add_user(self.request.settings, self.user)
+        auth.add_permission(self.request.settings, self.user, ('auth', 'modifyuser'))
         random_user = 'new-user-%d' % random.randint(1,100)
-        auth.add_user(self.request, random_user)
+        auth.add_user(self.request.settings, random_user)
         random_perm = (str(random.randint(1,100)), str(random.randint(1,100))) * random.randint(1,10)
         handlers.add_permission(self.request, random_user, handlers.PERMISSION_SEP.join(random_perm))
-        self.assertTrue(auth.has_permission(self.request, random_user, random_perm))
+        self.assertTrue(auth.has_permission(self.request.settings, random_user, random_perm))
 
     def test_unauth_add_permission(self):
-        auth.add_user(self.request, self.user)
+        auth.add_user(self.request.settings, self.user)
         random_user = 'new-user-%d' % random.randint(1,100)
-        auth.add_user(self.request, random_user)
+        auth.add_user(self.request.settings, random_user)
         random_perm = (str(random.randint(1,100)), str(random.randint(1,100))) * random.randint(1,10)
         self.assertRaises(NappingCatRejected, handlers.add_permission, self.request, random_user, handlers.PERMISSION_SEP.join(random_perm))
 
     def test_remove_permission_actually_removes_permission(self):
-        auth.add_user(self.request, self.user)
-        auth.add_permission(self.request, self.user, ('auth', 'modifyuser'))
+        auth.add_user(self.request.settings, self.user)
+        auth.add_permission(self.request.settings, self.user, ('auth', 'modifyuser'))
         random_user = 'new-user-%d' % random.randint(1,100)
-        auth.add_user(self.request, random_user)
+        auth.add_user(self.request.settings, random_user)
         random_perm = (str(random.randint(1,100)), str(random.randint(1,100))) * random.randint(1,10)
         handlers.add_permission(self.request, random_user, handlers.PERMISSION_SEP.join(random_perm))
-        self.assertTrue(auth.has_permission(self.request, random_user, random_perm))
+        self.assertTrue(auth.has_permission(self.request.settings, random_user, random_perm))
         handlers.remove_permission(self.request, random_user, handlers.PERMISSION_SEP.join(random_perm))
-        self.assertFalse(auth.has_permission(self.request, random_user, random_perm))
+        self.assertFalse(auth.has_permission(self.request.settings, random_user, random_perm))
 
     def test_unauth_remove_permission(self):
-        auth.add_user(self.request, self.user)
-        auth.add_permission(self.request, self.user, ('auth', 'modifyuser'))
+        auth.add_user(self.request.settings, self.user)
+        auth.add_permission(self.request.settings, self.user, ('auth', 'modifyuser'))
         random_user = 'new-user-%d' % random.randint(1,100)
-        auth.add_user(self.request, random_user)
+        auth.add_user(self.request.settings, random_user)
         random_perm = (str(random.randint(1,100)), str(random.randint(1,100))) * random.randint(1,10)
         handlers.add_permission(self.request, random_user, handlers.PERMISSION_SEP.join(random_perm))
-        self.assertTrue(auth.has_permission(self.request, random_user, random_perm))
-        auth.remove_permission(self.request, self.user, ('auth', 'modifyuser'))
+        self.assertTrue(auth.has_permission(self.request.settings, random_user, random_perm))
+        auth.remove_permission(self.request.settings, self.user, ('auth', 'modifyuser'))
         self.assertRaises(NappingCatRejected, handlers.remove_permission, self.request, random_user, handlers.PERMISSION_SEP.join(random_perm))
