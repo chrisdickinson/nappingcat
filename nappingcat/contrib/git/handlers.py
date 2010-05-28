@@ -3,6 +3,7 @@ from nappingcat.contrib.git.exceptions import KittyGitUnauthorized
 from nappingcat.contrib.git.utils import get_full_repo_dir, get_clone_base_url
 from nappingcat.contrib.git import operations
 from nappingcat.response import Success, TextResponse 
+from nappingcat.decorators import discoverable
 import socket
 import os
 import subprocess
@@ -11,6 +12,13 @@ import sys
 def get_settings(request):
     return dict(request.settings.items('kittygit'))
 
+@discoverable({'repo':'string'},"""
+fork_repo <repo_name>
+
+    fork another user's repository to which you have read access.
+    repository is given in the form <username>/<repo_name>.
+
+""".strip())
 def fork_repo(request, repo):
     settings = get_settings(request)
     auth = request.auth_backend
@@ -38,6 +46,12 @@ def fork_repo(request, repo):
     else:
         raise KittyGitUnauthorized("You don't have permission to read %s.git. Sorry!" % repo)
 
+@discoverable({'repo':'string'},"""
+create_repo <repo_name>
+
+    create a new repository.
+
+""".strip())
 def create_repo(request, repo_name, template_dir=None):
     auth = request.auth_backend
     settings = get_settings(request)
@@ -56,9 +70,13 @@ def create_repo(request, repo_name, template_dir=None):
         )
         if success:
             clone_base = get_clone_base_url(settings)
-            return Success({'message':"""
-                Successfully created a new repository. Clone it at %s:%s.git
-            """.strip() % (clone_base, '/'.join([request.user, repo_name]))})
+            clone_path = '/'.join([request.user, repo_name]) + '.git'
+            return Success({
+                'message':"""
+                    Successfully created a new repository. Clone it at %s:%s
+                """.strip() % (clone_base, clone_path),
+                'clone_path':clone_path
+            })
         else:
             raise NappingCatException('Create repo failed.') 
     raise KittyGitUnauthorized('You don\'t have permission to create a repo.')

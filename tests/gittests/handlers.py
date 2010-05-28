@@ -30,8 +30,9 @@ auth = tests.gittests.test_utils.NoAuth
         """.strip()
 
         test_settings = fake_settings(settings_str)
+        random_root_patterns = random.randint(1, 100)
         with open('/dev/null', 'rw') as stream:
-            request = Request('random-user-%d' % random.randint(0, 100), 'kitty-git fork', test_settings, (stream, stream, stream))
+            request = Request('random-user-%d' % random.randint(0, 100), 'kitty-git fork', test_settings, (stream, stream, stream), random_root_patterns)
             self.assertRaises(KittyGitUnauthorized, handlers.fork_repo, request, 'user-dne/random%d' % random.randint(0,100))
 
     def test_operation_successful(self):
@@ -55,7 +56,8 @@ repo_dir = %s
         with open('/dev/null', 'w') as out_stream:
             with open('/dev/null', 'w') as err_stream:
                 streams = (sys.stdin, out_stream, err_stream)
-                request = Request(other_user, 'kitty-git fork', test_settings, streams)
+                random_root_patterns = random.randint(1, 100)
+                request = Request(other_user, 'kitty-git fork', test_settings, streams, random_root_patterns)
                 expected_dir = os.path.expanduser('%s/%s/%s.git' % (test_dir, other_user, repo_name))
                 result = handlers.fork_repo(request, full_repo_name)
 
@@ -81,7 +83,8 @@ repo_dir = %s
         with open('/dev/null', 'w') as out_stream:
             with open('/dev/null', 'w') as err_stream:
                 streams = (sys.stdin, out_stream, err_stream)
-                request = Request(other_user, 'kitty-git fork', test_settings, streams)
+                random_root_patterns = random.randint(1, 100)
+                request = Request(other_user, 'kitty-git fork', test_settings, streams, random_root_patterns)
                 expected_dir = os.path.expanduser('%s/%s/%s.git' % (test_dir, other_user, repo_name))
 
                 self.assertRaises(NappingCatException, handlers.fork_repo, request, full_repo_name)
@@ -108,7 +111,8 @@ auth = tests.gittests.test_utils.NoAuth
         with open('/dev/null', 'w') as out_stream:
             with open('/dev/null', 'w') as err_stream:
                 streams = (sys.stdin, out_stream, err_stream)
-                request = Request('random-user-%d' % random.randint(0, 100), "kitty-git create-repo 'repo'", test_settings, streams)
+                random_root_patterns = random.randint(1, 100)
+                request = Request('random-user-%d' % random.randint(0, 100), "kitty-git create-repo 'repo'", test_settings, streams, random_root_patterns)
                 self.assertRaises(KittyGitUnauthorized, handlers.create_repo, request, 'repo-%d' % random.randint(0,10))
 
 
@@ -127,7 +131,8 @@ repo_dir = %s
         with open('/dev/null', 'w') as out_stream:
             with open('/dev/null', 'w') as err_stream:
                 streams = (sys.stdin, out_stream, err_stream)
-                request = Request(user, "kitty-git create-repo 'repo'", test_settings, streams)
+                random_root_patterns = random.randint(1, 100)
+                request = Request(user, "kitty-git create-repo 'repo'", test_settings, streams, random_root_patterns)
                 settings = handlers.get_settings(request)
                 full_repo_dir = utils.get_full_repo_dir(settings, user, repo_name) 
 
@@ -152,7 +157,8 @@ repo_dir = %s
         with open('/dev/null', 'w') as out_stream:
             with open('/dev/null', 'w') as err_stream:
                 streams = (sys.stdin, out_stream, err_stream)
-                request = Request(user, "kitty-git create-repo 'repo'", test_settings, streams)
+                random_root_patterns = random.randint(1, 100)
+                request = Request(user, "kitty-git create-repo 'repo'", test_settings, streams, random_root_patterns)
                 settings = handlers.get_settings(request)
                 full_repo_dir = utils.get_full_repo_dir(settings, user, repo_name) 
 
@@ -178,7 +184,8 @@ repo_dir = %s
         repo_name = 'repo-%d' % random.randint(0, 100)
         repo = '%s/%s.git' % (user, repo_name)
         streams = (sys.stdin, sys.stdout, sys.stderr)
-        request = Request(user, "kitty-git create-repo 'repo'", test_settings, streams)
+        random_root_patterns = random.randint(1, 100)
+        request = Request(user, "kitty-git create-repo 'repo'", test_settings, streams, random_root_patterns)
         settings = handlers.get_settings(request)
         full_repo_dir = utils.get_full_repo_dir(settings, user, repo_name) 
 
@@ -220,7 +227,8 @@ auth = tests.gittests.test_utils.NoAuth
 
         streams = (sys.stdin, sys.stdout, sys.stderr)
         for cmd, action in variants:
-            request = Request('random-user-%d' % random.randint(0, 100), cmd % repo, test_settings, streams)
+            random_root_patterns = random.randint(1, 100)
+            request = Request('random-user-%d' % random.randint(0, 100), cmd % repo, test_settings, streams, random_root_patterns)
             self.assertRaises(KittyGitUnauthorized, handlers.handle_git, request, action) 
 
     def test_bad_repo_raises_bad_parameter(self):
@@ -241,7 +249,8 @@ repo_dir = %s
 
         streams = (sys.stdin, sys.stdout, sys.stderr)
         for cmd, action in variants:
-            request = Request('random-user-%d' % random.randint(0, 100), cmd % repo, test_settings, streams)
+            random_root_patterns = random.randint(1, 100)
+            request = Request('random-user-%d' % random.randint(0, 100), cmd % repo, test_settings, streams, random_root_patterns)
             self.assertRaises(KittyGitBadParameter, handlers.handle_git, request, action) 
 
     def test_successful(self):
@@ -264,7 +273,8 @@ repo_dir = %s
 
         streams = (sys.stdin, sys.stdout, sys.stderr)
         for cmd, action in variants:
-            request = Request(user, cmd % repo, test_settings, streams)
+            random_root_patterns = random.randint(1, 100)
+            request = Request(user, cmd % repo, test_settings, streams, random_root_patterns)
             path = utils.get_full_repo_dir(handlers.get_settings(request), user, repo_name)
             with open('/dev/null', 'w') as output:
                 operations.create_repository('git', output, output, output, path, bare=True)
@@ -305,7 +315,8 @@ repo_dir = %s
 
         streams = (sys.stdin, sys.stdout, sys.stderr)
         for cmd, action in variants:
-            request = Request(user, cmd % repo, test_settings, streams)
+            random_root_patterns = random.randint(1, 100)
+            request = Request(user, cmd % repo, test_settings, streams, random_root_patterns)
             path = utils.get_full_repo_dir(handlers.get_settings(request), user, repo_name)
             with open('/dev/null', 'w') as output:
                 operations.create_repository('git', output, output, output, path, bare=True)

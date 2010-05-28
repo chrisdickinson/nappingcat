@@ -53,6 +53,7 @@ authorized_keys=.test_authorized_keys
             command=self.command,
             settings=self.settings,
             streams=(self.stdin, self.stdout, self.stderr),
+            root_patterns=random.randint(1,100),
         )
         self.auth = self.request.auth_backend
 

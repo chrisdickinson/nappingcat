@@ -3,9 +3,9 @@ import sys
 from nappingcat.config import build_settings
 from nappingcat.auth import get_auth_backend_from_settings
 
-def main():
-    name = sys.argv[1]
-    key = sys.stdin.read()
+def main(name=None, key=None):
+    name = sys.argv[1] if name is None else name
+    key = stdin.read() if key is None else key
     settings = build_settings()
     auth = get_auth_backend_from_settings(settings)
     auth.add_user(name)

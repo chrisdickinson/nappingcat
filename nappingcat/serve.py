@@ -7,7 +7,7 @@ from nappingcat.exceptions import NappingCatBadArguments
 import sys
 
 class ServeApp(App):
-    def create_request(self):
+    def create_request(self, cmdpatterns):
         try:
             user = self.environ.get('argv', [None])[0]
         except IndexError:
@@ -16,7 +16,8 @@ class ServeApp(App):
             user=self.environ.get('argv', [None])[0],
             command=self.environ.get('SSH_ORIGINAL_COMMAND', None),
             settings=self.global_settings,
-            streams=(self.stdin, self.stdout, self.stderr)
+            streams=(self.stdin, self.stdout, self.stderr),
+            root_patterns=cmdpatterns,
         )
 
     def setup_environ(self):
@@ -26,8 +27,8 @@ class ServeApp(App):
         self.routers = [(r'^', include(i)) for i in router_module_names.split('\n') if i]
 
     def main(self):
-        request = self.create_request()
         cmdpatterns = CommandPatterns('', self.routers)
+        request = self.create_request(cmdpatterns)
         target, match = cmdpatterns.match(request.command)
         return target(request, **match.groupdict())
 
