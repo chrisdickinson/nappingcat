@@ -1,4 +1,5 @@
 from unittest import TestCase
+from nappingcat.response import Response 
 from nappingcat.request import Request
 from nappingcat.exceptions import NappingCatException
 from nappingcat.contrib.git import handlers
@@ -58,8 +59,8 @@ repo_dir = %s
                 expected_dir = os.path.expanduser('%s/%s/%s.git' % (test_dir, other_user, repo_name))
                 result = handlers.fork_repo(request, full_repo_name)
 
-        self.assertTrue(isinstance(result, str))
-        self.assertTrue(repo_name in result)
+        self.assertTrue(isinstance(result, Response))
+        self.assertTrue(repo_name in result.content['message'])
         self.assertTrue(os.path.isdir(directory))
         self.assertTrue(os.path.isdir(expected_dir))
 
@@ -131,8 +132,8 @@ repo_dir = %s
                 full_repo_dir = utils.get_full_repo_dir(settings, user, repo_name) 
 
                 result = handlers.create_repo(request, repo_name)
-        self.assertTrue(user in result)
-        self.assertTrue(repo_name in result)
+        self.assertTrue(user in result.content['message'])
+        self.assertTrue(repo_name in result.content['message'])
         self.assertTrue(os.path.isdir(full_repo_dir))
 
 
@@ -156,8 +157,8 @@ repo_dir = %s
                 full_repo_dir = utils.get_full_repo_dir(settings, user, repo_name) 
 
                 result = handlers.create_repo(request, repo_name, os.path.join(os.getcwd(), 'tests/support'))
-        self.assertTrue(user in result)
-        self.assertTrue(repo_name in result)
+        self.assertTrue(user in result.content['message'])
+        self.assertTrue(repo_name in result.content['message'])
         self.assertTrue(os.path.isdir(full_repo_dir))
         self.assertTrue(os.path.isfile('tests/support/hooks/post-commit'))
         import time; time.sleep(1)      # pass the time for a bit for things to 
@@ -278,9 +279,9 @@ repo_dir = %s
             self.mox.ReplayAll()
             result = handlers.handle_git(request, action)
 
-            self.assertTrue(isinstance(result, str))
-            self.assertTrue(user in result)
-            self.assertTrue(repo_name in result)
+            self.assertTrue(isinstance(result, Response))
+            self.assertTrue(user in str(result))
+            self.assertTrue(repo_name in str(result))
             self.mox.UnsetStubs()
             shutil.rmtree(path)
 

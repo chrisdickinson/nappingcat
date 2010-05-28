@@ -1,5 +1,5 @@
 from nappingcat.exceptions import NappingCatUnhandled, NappingCatException
-from nappingcat import exceptions, logs, config
+from nappingcat import exceptions, config
 from nappingcat.util import import_module, import_class_from_module
 import os
 import sys
@@ -27,20 +27,19 @@ class App(object):
             sys.path[0:0] = [i for i in kitty_config['paths'].split('\n') if i]
 
 
-        logger_class = import_class_from_module(kitty_config['logger']) if 'logger' in kitty_config else logs.ColorLogger
         self.global_settings = settings
         self.nappingcat_settings = kitty_config
-        self.logger = logger_class(self.stderr)
 
     @classmethod
     def run(cls, *args, **kwargs):
         instance = cls()
         instance.setup_environ()
         try:
-            results = instance.main()
-            instance.logger.good(results)
+            result = instance.main()
         except NappingCatException, e:
-            instance.logger.bad(str(e))
+            result = (str(e))
+        self.stderr.write(str(result))
+        self.stderr.flush()
 
     def main(self, *args, **kwargs):
         raise NappingCatUnhandled("""

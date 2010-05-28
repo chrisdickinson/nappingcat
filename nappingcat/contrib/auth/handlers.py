@@ -1,4 +1,5 @@
 from nappingcat.exceptions import NappingCatRejected
+from nappingcat.response import Success 
 import sys
 import os
 
@@ -8,7 +9,7 @@ def add_user(request, username):
     auth = request.auth_backend
     if auth.has_permission(request.user, ('auth', 'adduser')):
         auth.add_user(username)
-        return "Added user '%s'" % username
+        return Success({'message':"Added user '%s'" % username})
     raise NappingCatRejected("You don't have permission to add a user.")
 
 def add_key_to_user(request, username):
@@ -17,7 +18,7 @@ def add_key_to_user(request, username):
         key = request.stdin.read()
         settings = dict(request.settings.items('kittyconfig'))
         auth.add_key_to_user(username, key) 
-        return "You added the key '%s...' to the user '%s'" % (key[0:30], username)
+        return Success({'message':"You added the key '%s...' to the user '%s'" % (key[0:30], username)})
     raise NappingCatRejected("You don't have permission to modify users.")
 
 def add_permission(request, username, permission):
@@ -28,7 +29,7 @@ def add_permission(request, username, permission):
     # you can pay it forward.
     if auth.has_permission(request.user, ('auth', 'modifyuser')) or auth.has_permission(request.user, permission_tuple):
         auth.add_permission(username, permission_tuple)
-        return "You granted '%s' the permission '%s'" % (username, permission)
+        return Success({'message':"You granted '%s' the permission '%s'" % (username, permission)})
     raise NappingCatRejected("You really don't have the right to do that. Sorry.")
 
 def remove_permission(request, username, permission):
@@ -39,5 +40,5 @@ def remove_permission(request, username, permission):
     # the permission, they can remove it from who they like.
     if auth.has_permission(request.user, ('auth', 'modifyuser')) or (user_owned_permission and auth.has_permission(request.settings, request.user, permission_tuple)):
         auth.remove_permission(username, permission_tuple)
-        return "You removed the permission '%s' from '%s'." % (permission, username)
+        return Success({'message':"You removed the permission '%s' from '%s'." % (permission, username)})
     raise NappingCatRejected("You really don't have the right to do that. Sorry.")

@@ -2,6 +2,7 @@ from nappingcat.exceptions import NappingCatRejected, NappingCatException
 from nappingcat.contrib.git.exceptions import KittyGitUnauthorized
 from nappingcat.contrib.git.utils import get_full_repo_dir, get_clone_base_url
 from nappingcat.contrib.git import operations
+from nappingcat.response import Success, TextResponse 
 import socket
 import os
 import subprocess
@@ -31,7 +32,7 @@ def fork_repo(request, repo):
             auth.add_permission(request.user, ('kittygit', 'read', '%s/%s' % (request.user, repo_name)))
             auth.add_permission(username, ('kittygit', 'read', '%s/%s' % (request.user, repo_name)))
             clone_base = get_clone_base_url(settings)
-            return "Repository '%s' successfully forked.\nClone it at '%s:%s/%s.git'" % (repo, clone_base, request.user, repo_name)
+            return Success({'message':"Repository '%s' successfully forked.\nClone it at '%s:%s/%s.git'" % (repo, clone_base, request.user, repo_name)})
         else:
             raise NappingCatException('Fork failed.')
     else:
@@ -55,9 +56,9 @@ def create_repo(request, repo_name, template_dir=None):
         )
         if success:
             clone_base = get_clone_base_url(settings)
-            return """
+            return Success({'message':"""
                 Successfully created a new repository. Clone it at %s:%s.git
-            """.strip() % (clone_base, '/'.join([request.user, repo_name]))
+            """.strip() % (clone_base, '/'.join([request.user, repo_name]))})
         else:
             raise NappingCatException('Create repo failed.') 
     raise KittyGitUnauthorized('You don\'t have permission to create a repo.')
@@ -96,7 +97,7 @@ def handle_git(request, action, permission_prefix='kittygit'):
                 'write':'wrote to',
                 'read':'read from',
             }[perm]
-            return "Successfully %s repo '%s'" % (verb, parsed_repo)
+            return Success({'message':"Successfully %s repo '%s'" % (verb, parsed_repo)}, TextResponse)
         raise NappingCatException('git%s failed.' % action.strip())
     else:
         raise KittyGitUnauthorized("You don't have permission to %s repo '%s'" % (perm, parsed_repo))
