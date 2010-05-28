@@ -2,6 +2,22 @@
 from setuptools import setup, find_packages
 import os
 
+
+def get_entry_points():
+    entry_points = [
+        'nappingcat-serve = nappingcat.serve:ServeApp.run',
+    ] 
+    for f in glob.glob("nappingcat/contrib/*/bin/*.py"):
+        module_name = f[:-3].replace('/', '.')
+        try:
+            module = import_module(module_name)
+            main = getattr(module, 'main')
+            command_name = module_name.rsplit('.', 1)[-1]
+            entry_points.append("%s = %s:main" % (command_name, module_name))
+        except (AttributeError, ImportError) as e:
+            pass
+    return entry_points
+
 setup(
     name = "nappingcat",
     version = "0.1",
@@ -20,9 +36,7 @@ Useful for implementing software like gitosis.
     url = "http://github.com/chrisdickinson/nappingcat/",
 
     entry_points = {
-        'console_scripts': [
-            'nappingcat-serve = nappingcat.serve:ServeApp.run',
-            ],
+        'console_scripts': get_entry_points(),
         },
 
     zip_safe=False,
