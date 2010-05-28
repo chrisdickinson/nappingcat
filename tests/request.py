@@ -1,12 +1,16 @@
 from unittest import TestCase
 from nappingcat import request
 import random
+from tests.gittests.test_utils import fake_settings
 
 class TestOfRequest(TestCase):
     def test_init(self):
         random_user = random.randint(1,100)
         random_command = random.randint(1,100)
-        random_settings = random.randint(1,100)
+        random_settings = fake_settings("""
+[kittyconfig]
+auth = tests.gittests.test_utils.AllAuth
+""".strip()) 
         random_stream = random.randint(1, 100)
         req = request.Request(random_user, random_command, random_settings, streams=[random_stream]*3) 
         self.assertEqual(req.user, random_user)

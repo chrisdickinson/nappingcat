@@ -1,4 +1,3 @@
-from nappingcat import auth
 from nappingcat.exceptions import NappingCatRejected, NappingCatException
 from nappingcat.contrib.git.exceptions import KittyGitUnauthorized
 from nappingcat.contrib.git.utils import get_full_repo_dir, get_clone_base_url
@@ -13,9 +12,9 @@ def get_settings(request):
 
 def fork_repo(request, repo):
     settings = get_settings(request)
-
+    auth = request.auth_backend
     username, repo_name = repo.split('/', 1)
-    if auth.has_permission(request.settings, request.user, ('kittygit', 'read', '%s/%s' % (username, repo_name))):
+    if auth.has_permission(request.user, ('kittygit', 'read', '%s/%s' % (username, repo_name))):
 
         to_repo_dir = get_full_repo_dir(settings, request.user, repo_name)
         from_repo_dir = get_full_repo_dir(settings, username, repo_name)
@@ -28,9 +27,9 @@ def fork_repo(request, repo):
             to_repo_dir
         )
         if success:
-            auth.add_permission(request.settings, request.user, ('kittygit', 'write', '%s/%s' % (request.user, repo_name)))
-            auth.add_permission(request.settings, request.user, ('kittygit', 'read', '%s/%s' % (request.user, repo_name)))
-            auth.add_permission(request.settings, username, ('kittygit', 'read', '%s/%s' % (request.user, repo_name)))
+            auth.add_permission(request.user, ('kittygit', 'write', '%s/%s' % (request.user, repo_name)))
+            auth.add_permission(request.user, ('kittygit', 'read', '%s/%s' % (request.user, repo_name)))
+            auth.add_permission(username, ('kittygit', 'read', '%s/%s' % (request.user, repo_name)))
             clone_base = get_clone_base_url(settings)
             return "Repository '%s' successfully forked.\nClone it at '%s:%s/%s.git'" % (repo, clone_base, request.user, repo_name)
         else:
@@ -39,10 +38,11 @@ def fork_repo(request, repo):
         raise KittyGitUnauthorized("You don't have permission to read %s.git. Sorry!" % repo)
 
 def create_repo(request, repo_name, template_dir=None):
+    auth = request.auth_backend
     settings = get_settings(request)
-    if auth.has_permission(request.settings, request.user, ('kittygit','create')):
-        auth.add_permission(request.settings, request.user, ('kittygit','write','%s/%s' % (request.user, repo_name)))
-        auth.add_permission(request.settings, request.user, ('kittygit', 'read', '%s/%s' % (request.user, repo_name)))
+    if auth.has_permission(request.user, ('kittygit','create')):
+        auth.add_permission(request.user, ('kittygit','write','%s/%s' % (request.user, repo_name)))
+        auth.add_permission(request.user, ('kittygit', 'read', '%s/%s' % (request.user, repo_name)))
 
         full_repo_dir = get_full_repo_dir(settings, request.user, repo_name)
         success = operations.create_repository(
@@ -64,6 +64,7 @@ def create_repo(request, repo_name, template_dir=None):
 
 def handle_git(request, action, permission_prefix='kittygit'):
     settings = get_settings(request)
+    auth = request.auth_backend
     command, subcommand, repo = None, None, None
     if action in (' receive-pack ', ' upload-pack '):
         command, subcommand, repo = request.command.split(' ', 2)
@@ -80,7 +81,7 @@ def handle_git(request, action, permission_prefix='kittygit'):
 
     parsed_repo = repo[1:-1][:-4]       # remove quotes and .git extension
     repo_name = parsed_repo.split('/', 1)[1]
-    if auth.has_permission(request.settings, request.user, (permission_prefix, perm, parsed_repo)):
+    if auth.has_permission(request.user, (permission_prefix, perm, parsed_repo)):
         directory = get_full_repo_dir(settings, request.user, repo_name) 
         success = operations.git_shell(
             settings.get('git', 'git'), 

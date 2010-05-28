@@ -79,6 +79,7 @@ routers=dne.dne.dne
         settings = """
 [%s]
 routers=tests.serve
+auth=tests.gittests.test_utils.AllAuth
         """.strip() % config.SECTION_NAME
         config.build_settings().AndReturn(create_settings(settings))
         config.build_settings().AndReturn(create_settings(settings))

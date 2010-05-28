@@ -32,24 +32,3 @@ def get_auth_backend_from_settings(settings):
     module = import_module(module)
     target = getattr(module,target)
     return target(settings)
-
-def has_permission(settings, username, permission):
-    backend = get_auth_backend_from_settings(settings)
-    return backend.has_permission(username, permission)
-
-def add_permission(settings, username, permission):
-    backend = get_auth_backend_from_settings(settings)
-    return backend.add_permission(username, permission)
-
-def remove_permission(settings, username, permission):
-    backend = get_auth_backend_from_settings(settings)
-    return backend.remove_permission(username, permission)
-
-def add_user(settings, username):
-    backend = get_auth_backend_from_settings(settings)
-    return backend.add_user(username)
-
-def add_key_to_user(settings, username, key):
-    backend = get_auth_backend_from_settings(settings)
-    result = backend.add_key_to_user(username, key)
-    return result
