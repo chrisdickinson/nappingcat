@@ -1,7 +1,8 @@
 #!/usr/bin/python
 from setuptools import setup, find_packages
 import os
-
+import glob
+from importlib import import_module
 
 def get_entry_points():
     entry_points = [
