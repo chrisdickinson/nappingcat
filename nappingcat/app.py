@@ -22,10 +22,7 @@ class App(object):
                 Your nappingcat.conf file does not include a %s section!
             """.strip() % config.SECTION_NAME)
 
-        kitty_config = dict(settings.items(config.SECTION_NAME))
-        if kitty_config.get('paths', None) is not None:
-            sys.path[0:0] = [i for i in kitty_config['paths'].split('\n') if i]
-
+        kitty_config = config.setup_environ(settings)
 
         self.global_settings = settings
         self.nappingcat_settings = kitty_config
@@ -38,8 +35,8 @@ class App(object):
             result = instance.main()
         except NappingCatException, e:
             result = (str(e))
-        self.stderr.write(str(result))
-        self.stderr.flush()
+        instance.stderr.write(str(result))
+        instance.stderr.flush()
 
     def main(self, *args, **kwargs):
         raise NappingCatUnhandled("""

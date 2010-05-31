@@ -17,6 +17,7 @@ def discover(request):
 
     def recurse(pattern, base_regex):
         for regex, target in pattern.map:
+            target = getattr(pattern.module, target) if isinstance(target, str) else target
             if isinstance(target, DiscoverableEndpoint):
                 target_info = target.to_dict()
                 target_info.update({
@@ -26,7 +27,7 @@ def discover(request):
             elif isinstance(target, CommandPatterns):
                 recurse(target, base_regex + regex)
 
-    recurse(root_patterns)
+    recurse(root_patterns, '')
     return Success({
         'message':'Successfully ran discover.',
         'endpoints':output,

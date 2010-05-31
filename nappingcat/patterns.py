@@ -8,16 +8,6 @@ class CommandPatterns(object):
         if self.path:
             self.module = import_module(self.path)
 
-    def find_func(self, func):
-        for regex, target in self.map:
-            if isinstance(target, CommandPatterns):
-                result = target.find_func(func)
-                if result:
-                    return (regex + result[0], result[1])
-            elif target is func:
-                return (regex, target) 
-        return (None, func)
-
     def match(self, command):
         for regex, target in self.map:
             match = re.search(regex, command)

@@ -5,7 +5,7 @@ from nappingcat.auth import get_auth_backend_from_settings
 
 def main(name=None, key=None):
     name = sys.argv[1] if name is None else name
-    key = stdin.read() if key is None else key
+    key = sys.stdin.read() if key is None else key
     settings = build_settings()
     auth = get_auth_backend_from_settings(settings)
     auth.add_user(name)
