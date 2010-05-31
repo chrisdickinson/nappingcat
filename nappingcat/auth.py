@@ -8,7 +8,7 @@ class AuthBackend(object):
         self.require_update = False
 
     def has_permission(self, user, permission):
-        full_query = (user,) + permission
+        full_query = (user,) + tuple(permission)
         result = self.users
         for i in full_query:
             result = result.get(i, {})
@@ -16,7 +16,7 @@ class AuthBackend(object):
 
     def add_permission(self, user, permission):
         self.require_update = True
-        full_query = (user,) + permission
+        full_query = (user,) + tuple(permission)
         result = self.users
         for i in full_query[:-1]:
             level = result.get(i, None)
@@ -27,7 +27,7 @@ class AuthBackend(object):
 
     def remove_permission(self, user, permission):
         self.require_update = True
-        full_query = (user,) + permission
+        full_query = (user,) + tuple(permission)
         result = self.users
         for i in full_query[:-1]:
             level = result.get(i, None)
