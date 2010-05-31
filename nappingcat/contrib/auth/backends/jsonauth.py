@@ -1,4 +1,5 @@
 from nappingcat.auth import AuthBackend
+from nappingcat import config
 import os
 try:
     import json as simplejson
@@ -13,10 +14,10 @@ class JSONAuthBackend(AuthBackend):
         try:
             with open(filename, 'r') as input:
                 self.users = simplejson.loads(input.read())
-        except IOError:
+        except (IOError, ValueError) as e:
             self.users = {}
             with open(filename, 'w') as fallback:
-                fallback.write(simplejson.dumps({})
+                fallback.write(simplejson.dumps({}))
 
     def finish(self, pubkey_handler):
         super(JSONAuthBackend, self).finish(pubkey_handler)

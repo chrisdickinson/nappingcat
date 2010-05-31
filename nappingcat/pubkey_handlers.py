@@ -6,7 +6,7 @@ class AuthorizedKeysFile(object):
         self.key_file = os.path.expanduser(key_file)
 
     def flush_keys(self, auth):
-        io = StringIO()
+        io = StringIO.StringIO()
         SSH_TEMPLATE = 'command="nappingcat-serve %s",no-port-forwarding,no-X11-forwarding,no-pty,no-agent-forwarding %s\n'
         for user in auth.get_users():
             for key in auth.get_keys(user):
