@@ -8,9 +8,43 @@ import socket
 import os
 import subprocess
 import sys
+import glob
+import shutil
 
 def get_settings(request):
     return dict(request.settings.items('kittygit'))
+
+@discoverable({'repo_name':'string'},"""
+delete_repo <repo_name>
+""".strip())
+def delete_repo(request, repo_name):
+    full_repo_name = '%s/%s' % (username, repo_name)
+    if request.auth_backend.has_permission(request.user, ('kittygit', 'write', full_repo_name)):
+        full_directory = os.path.expanduser(os.path.join(dict(request.settings.items('kittygit'))['repo_dir'], full_repo_name + '.git'))
+        if os.path.isdir(full_directory):
+            try:
+                shutil.rmtree(full_directory)
+                return Success({
+                    'message':"Successfully deleted repository '%s'" % repo_name
+                })
+            except OSError:
+                raise NappingCatRejected("Could not remove that path.")
+    raise KittyGitUnauthorized("You don't have permission to remove '%s'" % repo_name)
+
+@discoverable({'username':'string'},"""
+list_repos
+""".strip())
+def list_repos(request, username):
+    path = os.path.expanduser(os.path.join(dict(request.settings.items('kittygit'))['repo_dir'], username)) 
+    output = []
+    for file in glob.glob('%s/*.git' % path):
+        repo = file.rsplit('/', 1)[-1][:-4]
+        full_repo_name = '%s/%s' % (username, repo)
+        if request.auth_backend.has_permission(request.user, ('kittygit', 'read', full_repo_name)):
+            output.append(full_repo_name)
+    return Success({
+        'message':"You have access to the following repositories:\n\t%s" % "\n\t".join(output)
+    })
 
 @discoverable({'repo':'string'},"""
 fork_repo <repo_name>
