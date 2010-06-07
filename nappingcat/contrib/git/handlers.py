@@ -115,7 +115,7 @@ def handle_git(request, action, permission_prefix='kittygit'):
                 'write':'wrote to',
                 'read':'read from',
             }[perm]
-            return Success({'message':"Successfully %s repo '%s'" % (verb, parsed_repo)}, TextResponse)
+            return Success("Successfully %s repo '%s'" % (verb, parsed_repo), TextResponse)
         raise NappingCatException('git%s failed.' % action.strip())
     else:
         raise KittyGitUnauthorized("You don't have permission to %s repo '%s'" % (perm, parsed_repo))
