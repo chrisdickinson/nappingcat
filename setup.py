@@ -2,7 +2,6 @@
 from setuptools import setup, find_packages
 import os
 import glob
-from importlib import import_module
 
 def get_entry_points():
     entry_points = [
@@ -10,13 +9,8 @@ def get_entry_points():
     ] 
     for f in glob.glob("nappingcat/contrib/*/bin/*.py"):
         module_name = f[:-3].replace('/', '.')
-        try:
-            module = import_module(module_name)
-            main = getattr(module, 'main')
-            command_name = module_name.rsplit('.', 1)[-1]
-            entry_points.append("%s = %s:main" % (command_name, module_name))
-        except (AttributeError, ImportError) as e:
-            pass
+        command_name = module_name.rsplit('.', 1)[-1]
+        entry_points.append("%s = %s:main" % (command_name, module_name))
     return entry_points
 
 setup(
@@ -42,10 +36,8 @@ Useful for implementing software like gitosis.
 
     zip_safe=False,
     install_requires=[
-        # setuptools 0.6a9 will have a non-executeable post-update
-        # hook, this will make gitosis-admin settings not update
-        # (fixed in 0.6c5, maybe earlier)
         'setuptools>=0.6c5',
+        'importlib>=1.0.2',
         ],
     )
 
