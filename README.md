@@ -1,6 +1,25 @@
 napping cat
 ===========
 
+installation
+------------
+    # on the remote:
+    sudo pip install nappingcat
+    useradd -m -U -s/bin/bash -r git
+    sudo su git
+    nappingcat_initconf
+    cat id_rsa.pub > nappingcat_createsuperuser admin
+
+    # on your local machine
+    sudo pip install -e git+git://github.com/chrisdickinson/thundercat
+    thundercat addremote <nickname> <git@remoteurl.com>
+    thundercat add_permission admin kittygit create
+
+    # now if you cd into a git repo...
+    thundercat create_repo somerepo
+    # it will create the repo on the remote server, and
+    # ask if you want to add a remote.
+
 for a while now i've been using gitosis -- it's really nice! but really, i had no idea how it worked.
 so over the last week i've been picking it apart, and i found that really, it's exposing a limited API
 around git using the `~/.ssh/authorized_keys` file to automatically funnel all incoming commands through
@@ -37,9 +56,11 @@ it'll delegate out to that function (that looks like the following:)
 now, they're not required to return anything -- i'm leaning towards having whatever is returned passed back out
 through sys.stderr -- but you can see that a request object is passed in, and it contains the following:
 
-    request.user        # a string for the received username
-    request.settings    # a configparser instance of the settings file
-    request.command     # the original command intercepted
+    request.user            # a string for the received username
+    request.settings        # a configparser instance of the settings file
+    request.command         # the original command intercepted
+    request.std{in,out,err} # the std streams
+    request.auth_backend    # a copy of the auth backend for the session
 
 the settings are loaded from `~/nappingcat.conf`. An example looks like the following:
 
@@ -66,11 +87,6 @@ note that you can nest cmdpatterns like in django:
 so you can build up api's out of separate apps.
 
 again, it's very very very beta.
-
-TODO
-------------------
-create a decent auth app/API for adding new users, keys, and initializing keys.
-create a decent auth backend to actually provide permissions to apps.
 
 LICENSING
 ------------------
