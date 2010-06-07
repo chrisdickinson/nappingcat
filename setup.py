@@ -15,7 +15,7 @@ def get_entry_points():
 
 setup(
     name = "nappingcat",
-    version = "0.1",
+    version = "0.2",
     packages = find_packages(),
 
     author = "Chris Dickinson",
