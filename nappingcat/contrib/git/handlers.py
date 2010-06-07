@@ -18,9 +18,8 @@ def get_settings(request):
 delete_repo <repo_name>
 """.strip())
 def delete_repo(request, repo_name):
-    full_repo_name = '%s/%s' % (username, repo_name)
-    if request.auth_backend.has_permission(request.user, ('kittygit', 'write', full_repo_name)):
-        full_directory = os.path.expanduser(os.path.join(dict(request.settings.items('kittygit'))['repo_dir'], full_repo_name + '.git'))
+    if request.auth_backend.has_permission(request.user, ('kittygit', 'write', repo_name)):
+        full_directory = os.path.expanduser(os.path.join(dict(request.settings.items('kittygit'))['repo_dir'], repo_name + '.git'))
         if os.path.isdir(full_directory):
             try:
                 shutil.rmtree(full_directory)
