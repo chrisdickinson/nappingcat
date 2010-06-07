@@ -11,7 +11,7 @@ installation
     cat id_rsa.pub > nappingcat_createsuperuser admin
 
     # on your local machine
-    sudo pip install -e git+git://github.com/chrisdickinson/thundercat
+    sudo pip install -e git+git://github.com/chrisdickinson/thundercat#egg=thundercat
     thundercat addremote <nickname> <git@remoteurl.com>
     thundercat add_permission admin kittygit create
 
