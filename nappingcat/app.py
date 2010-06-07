@@ -1,5 +1,5 @@
 from nappingcat.exceptions import NappingCatUnhandled, NappingCatException
-from nappingcat import exceptions, config
+from nappingcat import exceptions, config, response
 from nappingcat.util import import_module, import_class_from_module
 import os
 import sys
@@ -34,7 +34,7 @@ class App(object):
         try:
             result = instance.main()
         except NappingCatException, e:
-            result = (str(e))
+            result = response.Failure(str(e))
         instance.stderr.write(str(result))
         instance.stderr.flush()
 

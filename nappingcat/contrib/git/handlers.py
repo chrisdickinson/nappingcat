@@ -46,7 +46,7 @@ def fork_repo(request, repo):
     else:
         raise KittyGitUnauthorized("You don't have permission to read %s.git. Sorry!" % repo)
 
-@discoverable({'repo':'string'},"""
+@discoverable({'repo_name':'string'},"""
 create_repo <repo_name>
 
     create a new repository.

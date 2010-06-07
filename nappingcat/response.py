@@ -20,3 +20,6 @@ class TextResponse(Response):
 
 def Success(content, response_type=Response):
     return response_type(200, content)
+
+def Failure(content, response_type=Response):
+    return response_type(500, content)
