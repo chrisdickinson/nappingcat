@@ -28,7 +28,7 @@ Useful for implementing software like gitosis.
 """.strip(),
     license = "BSD / GPLv3 / CDDL",
     keywords = "framework restrict commands ssh",
-    url = "http://github.com/downloads/chrisdickinson/nappingcat/nappingcat-0.2.tar.gz",
+    url = "http://github.com/downloads/chrisdickinson/nappingcat/nappingcat-0.3.tar.gz",
 
     entry_points = {
         'console_scripts': get_entry_points(),
