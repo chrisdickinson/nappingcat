@@ -132,9 +132,9 @@ def handle_git(request, action, permission_prefix='kittygit'):
     perm = modes[action]
 
     parsed_repo = repo[1:-1][:-4]       # remove quotes and .git extension
-    repo_name = parsed_repo.split('/', 1)[1]
+    username, repo_name = parsed_repo.split('/', 1)
     if auth.has_permission(request.user, (permission_prefix, perm, parsed_repo)):
-        directory = get_full_repo_dir(settings, request.user, repo_name) 
+        directory = get_full_repo_dir(settings, username, repo_name) 
         success = operations.git_shell(
             settings.get('git', 'git'), 
             request.stdin, 
