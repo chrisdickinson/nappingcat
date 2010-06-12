@@ -65,4 +65,33 @@ class TestOfCommandPatterns(TestCase):
         ])
         self.assertRaises(NappingCatBadPatterns, pat.match, 'hey')
 
+    def test_add_returns_new_patterns(self):
+        hey_value, yo_value = random.randint(1,100), random.randint(1,100)
+        pat = patterns.CommandPatterns('tests.patterns', [
+            ('^hey', lambda x: hey_value),
+        ])
+        rhs = patterns.CommandPatterns('tests.patterns', [
+            ('^yo', lambda x: yo_value),
+        ])
+        newpat = pat + rhs
+        for cmd, expected in (('hey', hey_value), ('yo', yo_value)):
+            result, match = newpat.match(cmd) 
+            self.assertEqual(result(random.randint(1,100)), expected)
+        self.assertRaises(NappingCatUnhandled, newpat.match, 'notheyoryo')
 
+    def test_add_raises_typeerror_on_non_patterns(self):
+        pat = patterns.CommandPatterns('tests.patterns', [(r'^anything', lambda x: x)])
+        self.assertRaises(TypeError, pat.__add__, random.randint(1,100))
+
+    def test_addequal_returns_correct_patterns(self):
+        hey_value, yo_value = random.randint(1,100), random.randint(1,100)
+        pat = patterns.CommandPatterns('tests.patterns', [
+            ('^hey', lambda x: hey_value),
+        ])
+        pat += patterns.CommandPatterns('tests.patterns', [
+            ('^yo', lambda x: yo_value),
+        ])
+        for cmd, expected in (('hey', hey_value), ('yo', yo_value)):
+            result, match = pat.match(cmd) 
+            self.assertEqual(result(random.randint(1,100)), expected)
+        self.assertRaises(NappingCatUnhandled, pat.match, 'notheyoryo')

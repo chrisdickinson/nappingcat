@@ -29,6 +29,12 @@ class CommandPatterns(object):
                     return results
         raise NappingCatUnhandled("This cat doesn't understand %s." % command)
 
+    def __add__(self, patterns):
+        if not isinstance(patterns, CommandPatterns):
+            raise TypeError("You can only add CommandPatterns to an existing patterns object.")
+        map = self.map + [(r'^', patterns)]
+        return CommandPatterns(self.path, map)
+
 def include(path):
     router_module = import_module(path)
     cmdpatterns = getattr(router_module, 'cmdpatterns')
